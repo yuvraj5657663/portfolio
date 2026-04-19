@@ -9,7 +9,7 @@ export function Skills() {
 
   useEffect(() => {
     portfolioService.getSkills()
-      .then(data => setSkillCategories(data))
+      .then(data => setSkillCategories(Array.isArray(data) ? data : []))
       .catch(err => console.error('Failed to fetch skills', err))
       .finally(() => setLoading(false));
   }, []);

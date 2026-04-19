@@ -27,12 +27,13 @@ export const portfolioService = {
   // Public
   getSkills: async (): Promise<SkillCategory[]> => {
     const res: any = await api.get('/skills');
-    return res.data;
+    // Interceptor already unwraps response.data, so res is the payload directly
+    return Array.isArray(res) ? res : res?.data ?? [];
   },
 
   getExperience: async (): Promise<Experience[]> => {
     const res: any = await api.get('/experience');
-    return res.data;
+    return Array.isArray(res) ? res : res?.data ?? [];
   },
 
   submitContact: async (contact: {
