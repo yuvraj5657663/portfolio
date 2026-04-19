@@ -2,26 +2,18 @@ import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Briefcase, Calendar, Loader2 } from 'lucide-react';
 
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 export function Experience() {
   const [experiences, setExperiences] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchExperience = async () => {
-      try {
-        const res = await fetch('/api/experience');
-        const data = await res.json();
-        if (data.success) {
-          setExperiences(data.data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch experience', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchExperience();
+    fetch(`${BASE_URL}/experience`)
+      .then(res => res.json())
+      .then(json => setExperiences(json.data ?? []))
+      .catch(err => console.error('Failed to fetch experience', err))
+      .finally(() => setLoading(false));
   }, []);
 
   return (
@@ -53,14 +45,12 @@ export function Experience() {
                 transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                 className="relative pl-8 md:pl-0"
               >
-                {/* Timeline Line (Mobile) */}
                 <div className="md:hidden absolute left-0 top-2 bottom-0 w-px bg-white/10" />
                 <div className="md:hidden absolute left-[-4px] top-2 w-2 h-2 rounded-full bg-blue-500" />
 
                 <div className="glass-panel p-8 md:p-10 relative overflow-hidden group">
-                  {/* Subtle gradient hover effect */}
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(0,209,255,0.05),transparent)] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  
+
                   <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
                     <div>
                       <h3 className="text-xl font-bold text-white mb-2">{exp.role}</h3>

@@ -1,4 +1,4 @@
-import api from './api';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export interface SkillCategory {
   category: string;
@@ -8,9 +8,9 @@ export interface SkillCategory {
 export interface Experience {
   company: string;
   role: string;
-  period: string;
-  description: string[];
-  skills: string[];
+  location?: string;
+  date?: string;
+  achievements?: string[];
 }
 
 export interface Contact {
@@ -26,14 +26,15 @@ export interface Contact {
 export const portfolioService = {
   // Public
   getSkills: async (): Promise<SkillCategory[]> => {
-    const res: any = await api.get('/skills');
-    // Interceptor already unwraps response.data, so res is the payload directly
-    return Array.isArray(res) ? res : res?.data ?? [];
+    const res = await fetch(`${BASE_URL}/skills`);
+    const json = await res.json();
+    return json.data ?? [];
   },
 
   getExperience: async (): Promise<Experience[]> => {
-    const res: any = await api.get('/experience');
-    return Array.isArray(res) ? res : res?.data ?? [];
+    const res = await fetch(`${BASE_URL}/experience`);
+    const json = await res.json();
+    return json.data ?? [];
   },
 
   submitContact: async (contact: {
@@ -42,36 +43,58 @@ export const portfolioService = {
     subject?: string;
     message: string;
   }): Promise<void> => {
-    await api.post('/contact', contact);
+    await fetch(`${BASE_URL}/contact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(contact),
+    });
   },
 
   trackVisit: async (): Promise<void> => {
     if (!sessionStorage.getItem('hasVisited')) {
-      await api.post('/visit');
+      await fetch(`${BASE_URL}/visit`, { method: 'POST' });
       sessionStorage.setItem('hasVisited', 'true');
     }
   },
 
   // Admin
   getContacts: async (): Promise<Contact[]> => {
-    const res: any = await api.get('/admin/contacts');
-    return res.data;
+    const token = localStorage.getItem('adminToken');
+    const res = await fetch(`${BASE_URL}/admin/contacts`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const json = await res.json();
+    return json.data ?? [];
   },
 
   deleteContact: async (id: string): Promise<void> => {
-    await api.delete(`/admin/contacts/${id}`);
+    const token = localStorage.getItem('adminToken');
+    await fetch(`${BASE_URL}/admin/contacts/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
   },
 
-  updateContactStatus: async (
-    id: string,
-    isRead: boolean
-  ): Promise<Contact> => {
-    const res: any = await api.patch(`/admin/contacts/${id}`, { isRead });
-    return res.data;
+  updateContactStatus: async (id: string, isRead: boolean): Promise<Contact> => {
+    const token = localStorage.getItem('adminToken');
+    const res = await fetch(`${BASE_URL}/admin/contacts/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ isRead }),
+    });
+    const json = await res.json();
+    return json.data;
   },
 
   getAnalytics: async (): Promise<any> => {
-    const res: any = await api.get('/admin/visits');
-    return res.data;
+    const token = localStorage.getItem('adminToken');
+    const res = await fetch(`${BASE_URL}/admin/visits`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const json = await res.json();
+    return json.data;
   },
 };

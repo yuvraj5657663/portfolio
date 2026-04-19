@@ -1,15 +1,22 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Loader2 } from 'lucide-react';
-import { portfolioService, SkillCategory } from '../services/portfolioService';
+
+interface SkillCategory {
+  category: string;
+  items: string[];
+}
+
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export function Skills() {
   const [skillCategories, setSkillCategories] = useState<SkillCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    portfolioService.getSkills()
-      .then(data => setSkillCategories(Array.isArray(data) ? data : []))
+    fetch(`${BASE_URL}/skills`)
+      .then(res => res.json())
+      .then(json => setSkillCategories(json.data ?? []))
       .catch(err => console.error('Failed to fetch skills', err))
       .finally(() => setLoading(false));
   }, []);
